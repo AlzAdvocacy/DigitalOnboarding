@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Checklist</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%238A4FB5'%3E%3Ccircle cx='12' cy='6' r='4.2'/%3E%3Ccircle cx='17.7' cy='10.2' r='4.2'/%3E%3Ccircle cx='15.5' cy='17' r='4.2'/%3E%3Ccircle cx='8.5' cy='17' r='4.2'/%3E%3Ccircle cx='6.3' cy='10.2' r='4.2'/%3E%3C/g%3E%3Ccircle cx='12' cy='12' r='3' fill='%23F2C94C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FBF9FD;
+    --ink: #231632;
+    --muted: #6B5D79;
+    --line: #E7E0EF;
+    --box: #B9A8CB;
+    --purple: #4A0D66;
+    --on-purple: #FFFFFF;
+    --bloom: #8A4FB5;
+    --bud: #DCD0E8;
+    --stem: #7FA27B;
+    --center: #F2C94C;
+    --note: #FFF7DC;
+    --note-edge: #EAD58F;
+    --banner: #F1E8F8;
+    --error: #A3261F;
+    --focus: #8A4FB5;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #17111D;
+      --ink: #F2ECF7;
+      --muted: #B5A8C2;
+      --line: #342A3F;
+      --box: #6E5E80;
+      --purple: #D4B5EE;
+      --on-purple: #231632;
+      --bloom: #B98AE0;
+      --bud: #56466E;
+      --stem: #86AE82;
+      --center: #F2C94C;
+      --note: #2A2417;
+      --note-edge: #6A5822;
+      --banner: #271D31;
+      --error: #FF9A90;
+      --focus: #C9A2EA;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.5;
+  }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  .wrap { max-width: 44rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  @media (min-width: 40rem) { .wrap { padding: 4rem 2.5rem 5rem; } }
+
+  /* Header */
+  .top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 1.25rem 2rem; }
+  h1 {
+    margin: 0;
+    color: var(--purple);
+    font-size: clamp(2.25rem, 8vw, 3.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .subtitle { margin: .5rem 0 0; color: var(--muted); font-size: 1.125rem; }
+
+  /* Who's using the page */
+  .who { display: flex; flex-direction: column; align-items: flex-start; gap: .4rem; }
+  .who-row { display: flex; align-items: center; gap: .6rem; }
+  .who-label { color: var(--muted); }
+  .who-options { display: inline-flex; border: 2px solid var(--line); border-radius: 999px; padding: 3px; }
+  .who-btn {
+    font: inherit; font-size: .95rem;
+    border: 0; border-radius: 999px;
+    background: transparent; color: var(--ink);
+    padding: .3rem .9rem; cursor: pointer;
+  }
+  .who-btn[aria-pressed="true"] { background: var(--purple); color: var(--on-purple); font-weight: 700; }
+  .who-hint { display: none; margin: 0; max-width: 16rem; font-size: .9rem; color: var(--muted); }
+  .who.needs-choice .who-hint { display: block; }
+  .who.needs-choice .who-options { border-color: var(--bloom); }
+  .who.nudge .who-options { animation: nudge .45s ease; }
+  @keyframes nudge { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+  /* Progress garden: one flower per item, blooming left to right */
+  .progress { margin-top: 2.75rem; }
+  .garden { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .2rem .35rem; min-height: 3rem; }
+  .flower { display: block; width: 2rem; height: 3rem; transform-origin: 50% 100%; }
+  .flower svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .stem { fill: none; stroke: var(--stem); stroke-width: 1.6; stroke-linecap: round; opacity: .45; transition: opacity .3s; }
+  .leaf { fill: var(--stem); opacity: .45; transition: opacity .3s; }
+  .petals {
+    fill: var(--bud);
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+    transform: scale(.4);
+    transition: transform .5s cubic-bezier(.34, 1.56, .64, 1), fill .3s;
+  }
+  .center { fill: var(--bud); transition: fill .3s; }
+  .flower.bloom .petals { fill: var(--bloom); transform: scale(1); }
+  .flower.bloom .center { fill: var(--center); }
+  .flower.bloom .stem, .flower.bloom .leaf { opacity: 1; }
+  .garden.intro .petals { transition-delay: calc(var(--i) * 55ms); }
+  .garden.celebrate .flower { animation: sway 1s ease-in-out calc(var(--i) * 40ms) 2; }
+  @keyframes sway {
+    0%, 100% { transform: none; }
+    35% { transform: translateY(-5px) rotate(-5deg); }
+    70% { transform: rotate(4deg); }
+  }
+  .count { margin: .8rem 0 0; font-weight: 700; }
+  .done-banner {
+    margin: 1.25rem 0 0; padding: .9rem 1.1rem;
+    background: var(--banner); border-left: 4px solid var(--bloom);
+    font-weight: 700;
+  }
+
+  /* Checklist */
+  .list { margin-top: 2.5rem; }
+  .group + .group { margin-top: 2.25rem; }
+  .group-title { margin: 0 0 .5rem; color: var(--purple); font-size: 1.2rem; }
+  .items { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .item { display: grid; grid-template-columns: 1.6rem 1fr; gap: .9rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+  .check {
+    appearance: none; -webkit-appearance: none;
+    width: 1.6rem; height: 1.6rem; margin: 0;
+    border: 2px solid var(--box); border-radius: .45rem;
+    background: transparent; cursor: pointer;
+    display: grid; place-content: center;
+    transition: background-color .15s, border-color .15s;
+  }
+  .check::after {
+    content: "";
+    width: .45rem; height: .85rem;
+    border: solid var(--on-purple); border-width: 0 3px 3px 0;
+    transform: translateY(-2px) rotate(45deg) scale(0);
+    transition: transform .2s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .check:checked { background: var(--purple); border-color: var(--purple); }
+  .check:checked::after { transform: translateY(-2px) rotate(45deg) scale(1); }
+  .item-text { display: block; cursor: pointer; }
+  .item.is-done .item-text {
+    color: var(--muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--box);
+    text-decoration-thickness: 1px;
+  }
+  .item-details { margin: .25rem 0 0; max-width: 60ch; font-size: .95rem; color: var(--muted); }
+  .item-link { display: inline-block; margin-top: .3rem; font-size: .95rem; color: var(--purple); text-underline-offset: 3px; }
+  .item-meta { margin: .3rem 0 0; font-size: .9rem; color: var(--muted); }
+  .check:disabled { cursor: default; }
+  .check:disabled:not(:checked) { border-style: dashed; }
+  .review { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.1rem; margin-top: .6rem; }
+  .review-state { margin: 0; font-size: .9rem; color: var(--muted); }
+  .review-state.waiting { color: var(--ink); font-weight: 700; }
+  .btn-small { font-size: .9rem; padding: .38rem .9rem; }
+  .note-area { margin-top: .35rem; }
+  .link-btn {
+    font: inherit; font-size: .9rem;
+    background: none; border: 0; padding: .15rem 0;
+    color: var(--purple); cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .add-note { color: var(--muted); }
+  .note {
+    margin-top: .35rem; padding: .6rem .8rem;
+    background: var(--note); border-left: 3px solid var(--note-edge);
+    border-radius: 0 .4rem .4rem 0;
+  }
+  .note-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .note-foot {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline;
+    gap: .25rem 1rem; margin-top: .35rem;
+    font-size: .9rem; color: var(--muted);
+  }
+  .note-input {
+    width: 100%; min-height: 5.5rem; resize: vertical;
+    font: inherit; font-size: 1rem; color: var(--ink);
+    background: var(--paper); border: 2px solid var(--box); border-radius: .5rem;
+    padding: .6rem .7rem;
+  }
+  .note-input:focus-visible { outline-offset: 0; }
+  .note-actions { display: flex; align-items: center; gap: 1.1rem; margin-top: .5rem; }
+  .btn {
+    font: inherit; font-size: .95rem; font-weight: 700;
+    background: var(--purple); color: var(--on-purple);
+    border: 0; border-radius: .5rem; padding: .45rem 1rem; cursor: pointer;
+  }
+
+  .foot { margin-top: 3rem; font-size: .9rem; color: var(--muted); }
+  .foot p { margin: 0; }
+  .status { min-height: 1.5em; margin-bottom: .35rem !important; font-weight: 700; color: var(--ink); }
+  .status.error { color: var(--error); }
+
+  /* Completion moment */
+  .petal-shower { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+  .petal-drop {
+    position: absolute; top: -2rem;
+    width: .75rem; height: .75rem;
+    border-radius: 50% 0 50% 50%;
+    background: var(--bloom);
+    animation: fall var(--d) linear var(--delay) forwards;
+  }
+  @keyframes fall { to { transform: translate(var(--x), 108vh) rotate(var(--r)); opacity: .25; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p id="loading" class="subtitle">Loading your checklist…</p>
+
+  <section id="message" hidden>
+    <h1 id="message-title"></h1>
+    <p id="message-body" class="subtitle"></p>
+  </section>
+
+  <div id="app" hidden>
+    <header class="top">
+      <div>
+        <h1 id="name"></h1>
+        <p id="subtitle" class="subtitle"></p>
+      </div>
+      <div id="who" class="who">
+        <div class="who-row">
+          <span id="who-label" class="who-label">I'm</span>
+          <div id="who-options" class="who-options" role="group" aria-labelledby="who-label"></div>
+        </div>
+        <p class="who-hint">Pick your name so check-offs and notes show who made them.</p>
+      </div>
+    </header>
+
+    <section class="progress" aria-label="Progress">
+      <div id="garden" class="garden" role="progressbar" aria-valuemin="0"></div>
+      <p id="count" class="count"></p>
+      <p id="done-banner" class="done-banner" hidden></p>
+    </section>
+
+    <div id="list" class="list"></div>
+
+    <footer class="foot">
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <p>Changes save automatically and show up for both of you. The page checks for new changes every 30 seconds.</p>
+    </footer>
+  </div>
+
+  <noscript><p>This checklist needs JavaScript turned on.</p></noscript>
+</main>
+
+<script>
+/* Paste your Apps Script web app URL here. It ends in /exec. */
+const SCRIPT_URL = 'PASTE_YOUR_SCRIPT_URL_HERE';
+
+(() => {
+  'use strict';
+
+  const POLL_MS = 30000;
+  const $ = (sel) => document.querySelector(sel);
+  const id = (new URLSearchParams(location.search).get('id') || '').trim().toLowerCase();
+  const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  const FLOWER =
+    '<svg viewBox="0 0 24 36" aria-hidden="true" focusable="false">' +
+    '<path class="stem" d="M12 35V15"/>' +
+    '<path class="leaf" d="M12 28c-4.5-.4-6.8-3.8-6.8-3.8 3.9-.9 6.3 1.3 6.8 3.8z"/>' +
+    '<g class="petals"><circle cx="12" cy="6" r="4.2"/><circle cx="17.7" cy="10.2" r="4.2"/>' +
+    '<circle cx="15.5" cy="16.9" r="4.2"/><circle cx="8.5" cy="16.9" r="4.2"/><circle cx="6.3" cy="10.2" r="4.2"/></g>' +
+    '<circle class="center" cx="12" cy="12" r="3"/></svg>';
+
+  let data = null;
+  let who = null;
+  let pending = 0;
+  let queue = Promise.resolve();
+  let wasComplete = null;
+  let statusTimer = null;
+  const editing = new Set();
+  const itemEls = new Map();
+
+  /* ---------- Small helpers ---------- */
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function getItem(no) { return data && data.items.find((i) => i.no === no); }
+  function firstName(n) { return String(n).trim().split(/\s+/)[0] || String(n); }
+  function fmt(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+  function byLine(prefix, person, iso) {
+    const date = fmt(iso);
+    return prefix + (person ? ' ' + person : '') + (date ? ' on ' + date : '');
+  }
+  function readWho() { try { return localStorage.getItem('checklist-who:' + id); } catch (e) { return null; } }
+  function storeWho(v) { try { localStorage.setItem('checklist-who:' + id, v); } catch (e) { /* private mode */ } }
+
+  function showMessage(title, body) {
+    $('#loading').hidden = true;
+    $('#app').hidden = true;
+    $('#message-title').textContent = title;
+    $('#message-body').textContent = body;
+    $('#message').hidden = false;
+  }
+
+  function setStatus(text, opts) {
+    opts = opts || {};
+    const s = $('#status');
+    clearTimeout(statusTimer);
+    s.textContent = text;
+    s.classList.toggle('error', !!opts.error);
+    if (opts.clearAfter) statusTimer = setTimeout(() => { s.textContent = ''; }, opts.clearAfter);
+  }
+
+  /* ---------- Talking to the Google Sheet ---------- */
+
+  async function apiGet() {
+    const res = await fetch(SCRIPT_URL + '?id=' + encodeURIComponent(id) + '&t=' + Date.now());
+    if (!res.ok) throw new Error('http_' + res.status);
+    return res.json();
+  }
+
+  async function apiPost(payload) {
+    // text/plain keeps the browser from sending a preflight request Apps Script can't answer.
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('http_' + res.status);
+    return res.json();
+  }
+
+  async function refresh(first) {
+    if (!first && pending > 0) return;
+    try {
+      const r = await apiGet();
+      if (!r || !r.ok) {
+        if (first && r && r.error === 'not_found') {
+          showMessage('This link doesn\u2019t match a checklist', 'Check that you copied the whole link. If it still doesn\u2019t work, ask the person who sent it for a new one.');
+        } else if (first) {
+          showMessage('The checklist didn\u2019t load', 'Reload the page in a minute. If it keeps happening, let the person who sent you this link know.');
+        }
+        return;
+      }
+      if (!first && pending > 0) return; // a save started meanwhile; its reply brings fresher data
+      apply(r.checklist, first);
+      if (!first && $('#status').classList.contains('error')) setStatus('');
+    } catch (err) {
+      if (first) showMessage('The checklist didn\u2019t load', 'Check your internet connection and reload the page.');
+      else setStatus('Couldn\u2019t check for updates. Trying again in 30 seconds.', { error: true });
+    }
+  }
+
+  function save(change, okText, rollback) {
+    const payload = Object.assign({ id: id, who: who }, change);
+    pending++;
+    setStatus('Saving\u2026');
+    queue = queue.then(async () => {
+      try {
+        const r = await apiPost(payload);
+        if (!r || !r.ok) throw new Error((r && r.error) || 'save_failed');
+        if (pending === 1) {
+          apply(r.checklist, false);
+          setStatus(okText, { clearAfter: okText.length > 20 ? 7000 : 2500 });
+        }
+      } catch (err) {
+        rollback();
+        setStatus('That change didn\u2019t save. Check your connection and try again.', { error: true });
+      } finally {
+        pending--;
+      }
+    });
+  }
+
+  /* ---------- Rendering ---------- */
+
+  function apply(c, first) {
+    const sameShape = !!data && data.items.length === c.items.length &&
+      data.items.every((it, i) => it.no === c.items[i].no && it.section === c.items[i].section);
+    data = c;
+    if (first || (!sameShape && editing.size === 0)) buildPage();
+    else data.items.forEach(updateItem);
+    updateProgress(first);
+  }
+
+  function buildPage() {
+    document.title = data.name + ': ' + data.title;
+    $('#name').textContent = data.name;
+    $('#subtitle').textContent = data.title + ' with ' + data.owner;
+    buildWho();
+    buildGarden();
+
+    const list = $('#list');
+    list.replaceChildren();
+    itemEls.clear();
+    let section = null;
+    let ul = null;
+    data.items.forEach((item) => {
+      if (!ul || item.section !== section) {
+        section = item.section;
+        const group = el('section', 'group');
+        if (section) group.append(el('h2', 'group-title', section));
+        ul = el('ul', 'items');
+        group.append(ul);
+        list.append(group);
+      }
+      ul.append(buildItem(item));
+    });
+
+    $('#loading').hidden = true;
+    $('#message').hidden = true;
+    $('#app').hidden = false;
+  }
+
+  function buildWho() {
+    if (who && who !== data.name && who !== data.owner) who = null;
+    const wrap = $('#who-options');
+    wrap.replaceChildren();
+    [data.name, data.owner].forEach((n) => {
+      const b = el('button', 'who-btn', firstName(n));
+      b.type = 'button';
+      b.dataset.who = n;
+      b.addEventListener('click', () => {
+        who = n;
+        storeWho(n);
+        syncWho();
+        data.items.forEach((it) => { const r = itemEls.get(it.no); if (r) renderReview(it, r.review); });
+      });
+      wrap.append(b);
+    });
+    syncWho();
+  }
+
+  function syncWho() {
+    document.querySelectorAll('.who-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.who === who)));
+    $('#who').classList.toggle('needs-choice', !who);
+  }
+
+  function nudgeWho() {
+    const w = $('#who');
+    w.classList.remove('nudge');
+    void w.offsetWidth; // restart the animation
+    w.classList.add('nudge');
+    const firstBtn = w.querySelector('.who-btn');
+    if (firstBtn) firstBtn.focus();
+  }
+
+  function buildGarden() {
+    const g = $('#garden');
+    g.replaceChildren();
+    data.items.forEach((_, i) => {
+      const f = el('span', 'flower');
+      f.style.setProperty('--i', i);
+      f.innerHTML = FLOWER;
+      g.append(f);
+    });
+  }
+
+  function buildItem(item) {
+    const li = el('li', 'item');
+    const box = el('input', 'check');
+    box.type = 'checkbox';
+    box.id = 'item-' + item.no;
+    box.addEventListener('change', () => onToggle(item.no, box));
+
+    const body = el('div', 'item-body');
+    const label = el('label', 'item-text', item.text);
+    label.htmlFor = box.id;
+    const details = el('p', 'item-details');
+    const link = el('a', 'item-link', 'Open link');
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    const meta = el('p', 'item-meta');
+    const review = el('div', 'review');
+    const noteArea = el('div', 'note-area');
+    body.append(label, details, link, meta, review, noteArea);
+    li.append(box, body);
+
+    itemEls.set(item.no, { li: li, box: box, label: label, details: details, link: link, meta: meta, review: review, noteArea: noteArea });
+    updateItem(item);
+    return li;
+  }
+
+  function updateItem(item) {
+    const r = itemEls.get(item.no);
+    if (!r) return;
+    r.li.classList.toggle('is-done', item.done);
+    r.box.checked = item.done;
+    r.box.disabled = !!item.needsApproval;
+    r.label.textContent = item.text;
+    r.details.textContent = item.details || '';
+    r.details.hidden = !item.details;
+    if (item.link && /^https?:\/\//i.test(item.link)) {
+      r.link.href = item.link;
+      r.link.setAttribute('aria-label', 'Open link for ' + item.text + ' (opens in a new tab)');
+      r.link.hidden = false;
+    } else {
+      r.link.removeAttribute('href');
+      r.link.hidden = true;
+    }
+    r.meta.textContent = item.done
+      ? byLine(item.needsApproval ? 'Approved' : 'Checked', item.checkedBy ? 'by ' + firstName(item.checkedBy) : '', item.checkedAt)
+      : '';
+    r.meta.hidden = !item.done;
+    renderReview(item, r.review);
+    if (!editing.has(item.no)) renderNote(item, r.noteArea);
+  }
+
+  function actionBtn(cls, text, fn) {
+    const b = el('button', cls, text);
+    b.type = 'button';
+    b.addEventListener('click', fn);
+    return b;
+  }
+
+  // Tasks that need approval: the staffer sends them for review, and only the owner checks them off.
+  function renderReview(item, area) {
+    area.replaceChildren();
+    area.hidden = !item.needsApproval;
+    if (!item.needsApproval) return;
+    const owner = firstName(data.owner);
+    const isOwner = who === data.owner;
+
+    if (item.done) {
+      if (isOwner) area.append(actionBtn('link-btn', 'Undo approval', () => setDone(item.no, false)));
+      else area.hidden = true;
+      return;
+    }
+    if (item.sentForReview) {
+      const since = fmt(item.sentAt);
+      area.append(el('p', 'review-state waiting', 'Waiting on ' + owner + '\u2019s review' + (since ? ' since ' + since : '')));
+      if (isOwner) {
+        area.append(actionBtn('btn btn-small', 'Approve', () => setDone(item.no, true)));
+        area.append(actionBtn('link-btn', 'Send back', () => sendBack(item.no)));
+      } else {
+        area.append(actionBtn('link-btn', 'Take back', () => setReview(item.no, false)));
+      }
+      return;
+    }
+    if (isOwner) {
+      area.append(el('p', 'review-state', 'Not sent for review yet'));
+      area.append(actionBtn('link-btn', 'Approve anyway', () => setDone(item.no, true)));
+    } else {
+      area.append(actionBtn('btn btn-small', 'Send to ' + owner + ' for review', () => setReview(item.no, true)));
+    }
+  }
+
+  function renderNote(item, area) {
+    area.replaceChildren();
+    if (item.note) {
+      const card = el('div', 'note');
+      const foot = el('div', 'note-foot');
+      const edit = el('button', 'link-btn', 'Edit note');
+      edit.type = 'button';
+      edit.addEventListener('click', () => openEditor(item.no));
+      foot.append(el('span', 'note-by', item.noteBy ? byLine(firstName(item.noteBy), '', item.noteAt) : ''), edit);
+      card.append(el('p', 'note-text', item.note), foot);
+      area.append(card);
+    } else {
+      const add = el('button', 'link-btn add-note', 'Add note');
+      add.type = 'button';
+      add.addEventListener('click', () => openEditor(item.no));
+      area.append(add);
+    }
+  }
+
+  function updateProgress(first) {
+    const total = data.items.length;
+    const done = data.items.filter((i) => i.done).length;
+    const garden = $('#garden');
+    if (garden.children.length !== total) buildGarden();
+
+    garden.setAttribute('aria-valuemax', String(total));
+    garden.setAttribute('aria-valuenow', String(done));
+    garden.setAttribute('aria-valuetext', done + ' of ' + total + ' done');
+    $('#count').textContent = total ? done + ' of ' + total + ' done' : 'No items yet';
+
+    const bloom = () => Array.from(garden.children).forEach((f, i) => f.classList.toggle('bloom', i < done));
+    if (first && !reduceMotion) {
+      garden.classList.add('intro');
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        bloom();
+        setTimeout(() => garden.classList.remove('intro'), 55 * total + 600);
+      }));
+    } else {
+      bloom();
+    }
+
+    const complete = total > 0 && done === total;
+    const banner = $('#done-banner');
+    banner.hidden = !complete;
+    if (complete) banner.textContent = 'Everything\u2019s checked off. Nice work, ' + firstName(data.name) + ' and ' + firstName(data.owner) + '.';
+    if (complete && wasComplete === false) celebrate();
+    wasComplete = complete;
+  }
+
+  function celebrate() {
+    if (reduceMotion) return;
+    const garden = $('#garden');
+    garden.classList.remove('celebrate');
+    void garden.offsetWidth;
+    garden.classList.add('celebrate');
+    setTimeout(() => garden.classList.remove('celebrate'), 3500);
+
+    const shower = el('div', 'petal-shower');
+    shower.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < 28; i++) {
+      const p = el('span', 'petal-drop');
+      p.style.left = (Math.random() * 100).toFixed(1) + 'vw';
+      p.style.setProperty('--d', (2.4 + Math.random() * 1.6).toFixed(2) + 's');
+      p.style.setProperty('--delay', (Math.random() * 0.8).toFixed(2) + 's');
+      p.style.setProperty('--x', Math.round(Math.random() * 120 - 60) + 'px');
+      p.style.setProperty('--r', Math.round(Math.random() * 540 - 270) + 'deg');
+      if (i % 4 === 0) p.style.background = 'var(--center)';
+      shower.append(p);
+    }
+    document.body.append(shower);
+    setTimeout(() => shower.remove(), 5000);
+  }
+
+  /* ---------- Actions ---------- */
+
+  function onToggle(no, box) {
+    if (!who) { box.checked = !box.checked; nudgeWho(); return; }
+    setDone(no, box.checked);
+  }
+
+  function setDone(no, value) {
+    if (!who) { nudgeWho(); return; }
+    const item = getItem(no);
+    if (!item) return;
+    if (item.needsApproval && who !== data.owner) { updateItem(item); return; }
+    const prev = { done: item.done, checkedBy: item.checkedBy, checkedAt: item.checkedAt };
+    Object.assign(item, { done: value, checkedBy: value ? who : '', checkedAt: value ? new Date().toISOString() : '' });
+    updateItem(item);
+    updateProgress(false);
+    const okText = item.needsApproval ? (value ? 'Approved' : 'Approval undone') : 'Saved';
+    save({ no: no, field: 'done', value: value }, okText, () => {
+      const cur = getItem(no);
+      if (!cur) return;
+      Object.assign(cur, prev);
+      updateItem(cur);
+      updateProgress(false);
+    });
+  }
+
+  function setReview(no, value, okText) {
+    if (!who) { nudgeWho(); return; }
+    const item = getItem(no);
+    if (!item || item.done) return;
+    const prev = { sentForReview: item.sentForReview, sentAt: item.sentAt };
+    Object.assign(item, { sentForReview: value, sentAt: value ? new Date().toISOString() : '' });
+    updateItem(item);
+    const owner = firstName(data.owner);
+    const text = okText || (value ? 'Sent to ' + owner + ' for review. Be sure to ping him too.' : 'Taken back');
+    save({ no: no, field: 'review', value: value }, text, () => {
+      const cur = getItem(no);
+      if (!cur) return;
+      Object.assign(cur, prev);
+      updateItem(cur);
+    });
+  }
+
+  function sendBack(no) {
+    setReview(no, false, 'Sent back. Leave a note about what to change.');
+    openEditor(no);
+  }
+
+  function openEditor(no, draft) {
+    if (!who) { nudgeWho(); return; }
+    const item = getItem(no);
+    const r = itemEls.get(no);
+    if (!item || !r) return;
+    editing.add(no);
+
+    const area = r.noteArea;
+    area.replaceChildren();
+    const ta = el('textarea', 'note-input');
+    ta.value = draft != null ? draft : item.note;
+    ta.maxLength = 2000;
+    ta.rows = 3;
+    ta.setAttribute('aria-label', 'Note for ' + item.text);
+    const actions = el('div', 'note-actions');
+    const saveBtn = el('button', 'btn', 'Save note');
+    saveBtn.type = 'button';
+    const cancelBtn = el('button', 'link-btn', 'Cancel');
+    cancelBtn.type = 'button';
+    actions.append(saveBtn, cancelBtn);
+    area.append(ta, actions);
+    ta.focus();
+
+    const close = () => {
+      editing.delete(no);
+      const cur = getItem(no);
+      if (cur) renderNote(cur, area);
+      const btn = area.querySelector('button');
+      if (btn) btn.focus();
+    };
+    cancelBtn.addEventListener('click', close);
+    ta.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveBtn.click(); }
+    });
+    saveBtn.addEventListener('click', () => {
+      const cur = getItem(no);
+      if (!cur) return;
+      const value = ta.value.trim();
+      if (value === cur.note) { close(); return; }
+      const prev = { note: cur.note, noteBy: cur.noteBy, noteAt: cur.noteAt };
+      Object.assign(cur, { note: value, noteBy: value ? who : '', noteAt: value ? new Date().toISOString() : '' });
+      close();
+      save({ no: no, field: 'note', value: value }, value ? 'Note saved' : 'Note removed', () => {
+        const c2 = getItem(no);
+        if (c2) Object.assign(c2, prev);
+        openEditor(no, value); // reopen with the unsaved text so nothing is lost
+      });
+    });
+  }
+
+  /* ---------- Start ---------- */
+
+  if (!id) {
+    showMessage('Open your personal link', 'This page shows one person\u2019s checklist. Use the link you were sent. It ends with ?id= and a short code.');
+  } else if (SCRIPT_URL.indexOf('PASTE_') === 0) {
+    showMessage('One more setup step', 'Add your Apps Script web app URL to SCRIPT_URL in index.html, then reload this page.');
+  } else {
+    who = readWho();
+    refresh(true);
+    setInterval(() => { if (document.visibilityState === 'visible') refresh(false); }, POLL_MS);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(false); });
+  }
+})();
+</script>
+</body>
+</html>
